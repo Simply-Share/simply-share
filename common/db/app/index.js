@@ -1,6 +1,9 @@
-import { PrismaClient } from '@prisma/client/edge'
+import { PrismaClient } from '@prisma/client'
 
-const prismaConfig = {}
+import User from './models/user.js'
+import Plan from './models/plan.js'
+
+let prismaConfig = {}
 
 if (process.env.DEV_ENV) {
   prismaConfig = {
@@ -27,5 +30,8 @@ if (process.env.DEV_ENV) {
 
 const prisma = new PrismaClient(prismaConfig)
 
-export * as User from './models/user.js'
 export default prisma
+export {
+  User,
+  Plan
+}

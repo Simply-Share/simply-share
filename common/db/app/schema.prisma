@@ -25,69 +25,88 @@ enum Status {
 }
 
 model User {
-  id    Int       @id @default(autoincrement())
-  name  String
-  email String    @unique
-  data  Json      @default("{}")
-  oauthProvider OauthProvider
+  id            Int           @id @default(autoincrement()) @map("user_id")
+  name          String        @map("name")
+  email         String        @unique @map("email")
+  data          Json          @default("{}") @map("data")
+  oauthProvider OauthProvider @map("oauth_provider")
 
-  plan  UserPlan?
+  plan       UserPlan?
   shareables Shareable[]
 
-  status     Status @default(ACTIVE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    Status   @default(ACTIVE) @map("status")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([email], name: "user_email_index")
+  @@index([oauthProvider], name: "user_oauth_provider_index")
+  @@map("users")
 }
 
 model UserPlan {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id        Int       @id @default(autoincrement()) @map("user_plan_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
-  userId Int  @unique
+  userId Int  @unique @map("user_id")
   user   User @relation(fields: [userId], references: [id])
 
   plan   Plan @relation(fields: [planId], references: [id])
-  planId Int  @unique
+  planId Int  @unique @map("plan_id")
 
-  data Json @default("{}")
-  status Status @default(ACTIVE)
+  data   Json   @default("{}") @map("data")
+  status Status @default(ACTIVE) @map("status")
+
+  @@unique([userId, planId], name: "user_plan_unique")
+  @@index([userId], name: "user_plan_user_id_index")
+  @@index([planId], name: "user_plan_plan_id_index")
+  @@map("user_plans")
 }
 
 model Plan {
-  id        Int        @id @default(autoincrement())
-  name      String
-  price     Float
-  data      Json       @default("{}")
+  id        Int        @id @default(autoincrement()) @map("plan_id")
+  slug      String     @unique @map("slug")
+  name      String     @map("name")
+  price     Float // in USD   @map("price")
+  data      Json       @default("{}") @map("data")
   userPlans UserPlan[]
+
+  status Status @default(ACTIVE) @map("status")
+
+  @@map("plans")
 }
 
 model Shareable {
-  id        Int      @id @default(autoincrement())
-  bucketLink String
-  fileType  ShareableFileType
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int               @id @default(autoincrement()) @map("shareable_id")
+  bucketLink String            @map("bucket_link")
+  fileType   ShareableFileType @map("file_type")
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id])
-  userId Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @map("user_id")
 
-  data Json @default("{}")
-  status Status @default(ACTIVE)
+  data   Json   @default("{}") @map("data")
+  status Status @default(ACTIVE) @map("status")
+
+  @@map("shareables")
 }
 
 model Domain {
-  id        Int      @id @default(autoincrement())
-  
-  domainName String
-  subDomain String
+  id Int @id @default(autoincrement()) @map("domain_id")
 
-  data Json @default("{}")
+  domainName String @map("domain_name")
+  subDomain  String @map("sub_domain")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
+  data Json @default("{}") @map("data")
 
-  status Status @default(ACTIVE)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  status Status @default(ACTIVE) @map("status")
+
+  @@unique([domainName, subDomain], name: "domain_unique")
+  @@map("domains")
 }

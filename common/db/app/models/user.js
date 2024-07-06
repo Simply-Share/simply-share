@@ -14,7 +14,14 @@ function updateById(id, data, filter = {}, otherArgs = {}) {
   })
 }
 
+function findByEmail(email) {
+  return db.user.findUnique({
+    where: { email },
+  })
+}
+
 export default {
   create,
   updateById,
+  findByEmail
 }
