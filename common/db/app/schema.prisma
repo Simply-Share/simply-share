@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
 }
 
 enum OauthProvider {
@@ -61,6 +62,7 @@ model UserPlan {
   @@unique([userId, planId], name: "user_plan_unique")
   @@index([userId], name: "user_plan_user_id_index")
   @@index([planId], name: "user_plan_plan_id_index")
+  @@index([planId, userId], name: "user_plan_plan_id_user_id_index")
   @@map("user_plans")
 }
 
@@ -84,11 +86,13 @@ model Shareable {
   createdAt  DateTime          @default(now()) @map("created_at")
   updatedAt  DateTime          @updatedAt @map("updated_at")
 
-  user   User @relation(fields: [userId], references: [id])
-  userId Int  @map("user_id")
+  user   User? @relation(fields: [userId], references: [id])
+  userId Int?  @map("user_id")
 
   data   Json   @default("{}") @map("data")
   status Status @default(ACTIVE) @map("status")
+
+  slug String @unique @map("slug")
 
   @@map("shareables")
 }

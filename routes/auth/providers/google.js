@@ -1,9 +1,10 @@
 import Joi from 'joi'
 import jwt from 'jsonwebtoken'
 import { OauthProvider } from '@prisma/client'
-import crypto from 'crypto'
 
-import { User } from '../../../common/db/app/index.js'
+import { User, Plan, UserPlan } from '../../../common/db/app/index.js'
+
+const FREE_PLAN_SLUG = 'free'
 
 class GoogleOauthProvider {
   #SCOPES = [
@@ -80,16 +81,11 @@ class GoogleOauthProvider {
         })
       }
 
-      const { name, email } = profile
+      const { email } = profile
 
       let user = await User.findByEmail(email)
       if (!user) {
-        user = await User.create({
-          email,
-          name,
-          oauthProvider: OauthProvider.GOOGLE,
-          data: profile,
-        })
+        user = await this.#handleNewUser(profile)
       }
 
       const token = jwt.sign(
@@ -116,6 +112,32 @@ class GoogleOauthProvider {
         message: error.message,
       })
     }
+  }
+
+  async #handleNewUser(profile) {
+    const freePlan = await Plan.find({
+      slug: FREE_PLAN_SLUG,
+    })
+    let user = await User.create({
+      email: profile.email,
+      name: profile.name,
+      oauthProvider: OauthProvider.GOOGLE,
+      data: profile,
+    })
+    let userPlan = await UserPlan.create({
+      userId: user.id,
+      planId: freePlan.id,
+      data: freePlan.data,
+    })
+    await User.update(
+      {
+        email: user.email,
+      },
+      {
+        plan: userPlan,
+      }
+    )
+    return user
   }
 }
 

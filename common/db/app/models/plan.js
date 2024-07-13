@@ -8,6 +8,13 @@ function upsert(data) {
   })
 }
 
+function find(data){
+  return db.plan.findUnique({
+    where: data,
+  })
+}
+
 export default {
     upsert,
+    find
 }

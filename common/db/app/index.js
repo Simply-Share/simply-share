@@ -2,30 +2,16 @@ import { PrismaClient } from '@prisma/client'
 
 import User from './models/user.js'
 import Plan from './models/plan.js'
+import UserPlan from './models/userPlan.js'
+import Shareable from './models/shareable.js'
 
 let prismaConfig = {}
 
 if (process.env.DEV_ENV) {
   prismaConfig = {
-    log: [
-      {
-        emit: 'event',
-        level: 'query',
-      },
-      {
-        emit: 'event',
-        level: 'info',
-      },
-      {
-        emit: 'event',
-        level: 'warn',
-      },
-      {
-        emit: 'event',
-        level: 'error',
-      },
-    ],
+    log: ['query', 'info', 'warn', 'error']
   }
+  console.log('Prisma is running in development mode')
 }
 
 const prisma = new PrismaClient(prismaConfig)
@@ -33,5 +19,7 @@ const prisma = new PrismaClient(prismaConfig)
 export default prisma
 export {
   User,
-  Plan
+  Plan,
+  UserPlan,
+  Shareable
 }

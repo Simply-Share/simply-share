@@ -6,7 +6,7 @@ function create(data) {
   })
 }
 
-function updateById(id, data, filter = {}, otherArgs = {}) {
+function update(filter, data, otherArgs = {}) {
   return db.user.update({
     where: { id, ...filter },
     data,
@@ -22,6 +22,6 @@ function findByEmail(email) {
 
 export default {
   create,
-  updateById,
-  findByEmail
+  update,
+  findByEmail,
 }
