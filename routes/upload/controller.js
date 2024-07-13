@@ -12,6 +12,7 @@ export async function uploadFile(req, res) {
       .valid(...Object.values(ShareableFileType))
       .required(),
     file: Joi.any().required(),
+    domain: Joi.string().default(null),
   })
 
   const { error, value } = schema.validate({
@@ -23,10 +24,22 @@ export async function uploadFile(req, res) {
     return res.status(400).json({ error: error.message })
   }
 
-  const { fileType, file } = value
+  // NOTE: check storage limit
+
+  const { fileType, file, domain } = value
   const slug = await randomSlugGenerator()
   const user = req.user
   const path = `${user.id}_${user.email}/${slug}/${file.originalname}`
+  const domainConfig = {
+    subDomain: slug,
+    domainName: process.env.DOMAIN ?? 'localhost:8000', 
+  }
+
+  const plan = user.plan.data
+
+  if (plan.customDomain) {
+    domainConfig.domainName = domain ?? domainConfig.domainName
+  }
 
   try {
     const uploadInstance = storageBucket.uploadFile(path, file.buffer)
@@ -38,6 +51,9 @@ export async function uploadFile(req, res) {
       bucketLink: publicPath,
       fileType,
       slug,
+      domain: {
+        create: domainConfig,
+      },
     })
 
     if (fileType === ShareableFileType.ZIP) {
@@ -61,9 +77,8 @@ export async function uploadFile(req, res) {
       await Promise.all(promises)
     }
 
-    return res.json({ ok: true, slug })
+    return res.json({ ok: true, domain: `${domainConfig.subDomain}.${domainConfig.domainName}` })
   } catch (e) {
-    console.error(e)
     return res.status(500).json({ ok: false, error: e.message })
   }
 }

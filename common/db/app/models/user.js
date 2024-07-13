@@ -17,6 +17,9 @@ function update(filter, data, otherArgs = {}) {
 function findByEmail(email) {
   return db.user.findUnique({
     where: { email },
+    include: {
+      plan: true,
+    }
   })
 }
 

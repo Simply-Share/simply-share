@@ -15,8 +15,12 @@ const ALLOWED_FILE_TYPES = [
 
 const upload = multer({
   fileFilter: (req, file, cb) => {
+    const plan = user.plan.data
     if (!ALLOWED_FILE_TYPES.includes(file.mimetype)) {
       return cb(new Error('Invalid file type'))
+    }
+    if(file.size > 1024 * 1024 * plan.storageLimit) {
+      return cb(new Error('File size too large than in the plan'))
     }
     cb(null, true)
   },
