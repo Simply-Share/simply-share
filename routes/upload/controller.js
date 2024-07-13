@@ -1,10 +1,10 @@
-import { ShareableFileType } from '@prisma/client'
+import { ShareableFileType, Status } from '@prisma/client'
 import Joi from 'joi'
-import { generateSlug } from 'random-word-slugs'
 import unzipper from 'unzipper'
 
 import { storageBucket } from '../../common/storage/index.js'
 import { Shareable } from '../../common/db/app/index.js'
+import { randomSlugGenerator } from '../../common/utils/index.js'
 
 export async function uploadFile(req, res) {
   const schema = Joi.object({
@@ -24,28 +24,66 @@ export async function uploadFile(req, res) {
     return res.status(400).json({ error: error.message })
   }
 
-  // NOTE: check storage limit
+  const { fileType, file, domain } = value,
+    slug = await randomSlugGenerator(),
+    user = req.user,
+    path = `${user.id}_${user.email}/${slug}/${file.originalname}`,
+    domainConfig = {
+      subDomain: slug,
+      domainName: process.env.DOMAIN ?? 'localhost:8000',
+    },
+    plan = user.plan.data
+  let sizeUsedSoFar = 0
 
-  const { fileType, file, domain } = value
-  const slug = await randomSlugGenerator()
-  const user = req.user
-  const path = `${user.id}_${user.email}/${slug}/${file.originalname}`
-  const domainConfig = {
-    subDomain: slug,
-    domainName: process.env.DOMAIN ?? 'localhost:8000', 
+  // NOTE: check storage limit and file count
+  const activeShareables = await Shareable.count({
+    userId: req.user.id,
+    NOT: {
+      status: Status.DELETED,
+    },
+  })
+
+  if (activeShareables >= plan.activeShareables) {
+    return res.status(400).json({
+      error: 'You have reached the maximum limit of active shareables',
+    })
   }
-
-  const plan = user.plan.data
 
   if (plan.customDomain) {
     domainConfig.domainName = domain ?? domainConfig.domainName
+  }
+
+  const shareables = await Shareable.list(
+    {
+      userId: req.user.id,
+      NOT: {
+        status: Status.DELETED,
+      },
+    },
+    {
+      select: {
+        data: true,
+      },
+    }
+  )
+
+  shareables.forEach(({ data }, index) => {
+    sizeUsedSoFar += data?.size ?? 0
+    console.log('sizeUsedSoFar', index, sizeUsedSoFar)
+  })
+
+  sizeUsedSoFar += (file.size / 1024 / 1024) // convert to MB
+
+  if (sizeUsedSoFar > plan.storageLimit) {
+    return res.status(400).json({
+      error: 'You have reached the maximum storage limit',
+    })
   }
 
   try {
     const uploadInstance = storageBucket.uploadFile(path, file.buffer)
     let publicPath = `https://cdn.hitenvats.one/eruva/${path}`
     await uploadInstance.done()
-
     await Shareable.create({
       userId: user.id,
       bucketLink: publicPath,
@@ -54,6 +92,9 @@ export async function uploadFile(req, res) {
       domain: {
         create: domainConfig,
       },
+      data: {
+        size: file.size / 1024 / 1024,
+      },
     })
 
     if (fileType === ShareableFileType.ZIP) {
@@ -61,7 +102,6 @@ export async function uploadFile(req, res) {
         unzipper.Parse({ forceStream: true })
       )
       const promises = []
-
       for await (const e of zip) {
         const entry = e
         const fileName = entry.path
@@ -73,25 +113,45 @@ export async function uploadFile(req, res) {
           entry.autodrain()
         }
       }
-
       await Promise.all(promises)
     }
 
-    return res.json({ ok: true, domain: `${domainConfig.subDomain}.${domainConfig.domainName}` })
+    return res.json({
+      ok: true,
+      domain: `${domainConfig.subDomain}.${domainConfig.domainName}`,
+    })
   } catch (e) {
     return res.status(500).json({ ok: false, error: e.message })
   }
 }
 
-async function randomSlugGenerator() {
-  const slug = generateSlug(3, {
-    format: 'sentence',
+export async function listUploads(req, res) {
+  const shareables = await Shareable.list(
+    {
+      userId: req.user.id,
+      NOT: {
+        status: Status.DELETED,
+      },
+    },
+    {
+      include: {
+        domain: true,
+      },
+    }
+  )
+  return res.json({
+    ok: true,
+    shareables: shareables.map((s) => {
+      return {
+        id: s.id,
+        fileType: s.fileType,
+        slug: s.slug,
+        domain: `https://${s.domain.subDomain}.${s.domain.domainName}`,
+        data: {
+          size: (s.data.size).toFixed(2) + " mB",
+        },
+        status: s.status,
+      }
+    }),
   })
-    .toLowerCase()
-    .replace(/\s/g, '-')
-  const isAreadyExist = false
-  if (isAreadyExist) {
-    return randomSlugGenerator()
-  }
-  return slug
 }

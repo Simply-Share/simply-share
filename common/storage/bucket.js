@@ -1,6 +1,6 @@
 import {
   GetObjectCommand,
-  PutObjectCommand,
+  ListObjectsV2Command,
   S3Client,
 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
@@ -38,6 +38,8 @@ export default class StorageBucket {
   }
 
   getObject(path) {
-    return this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: path }))
+    return this.client.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: path })
+    )
   }
 }

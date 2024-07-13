@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import multer from 'multer'
 
-import { uploadFile } from './controller.js'
+import { uploadFile, listUploads } from './controller.js'
 import { authMiddleware } from '../../common/middleware/auth.js'
 
 const ALLOWED_FILE_TYPES = [
@@ -15,11 +15,11 @@ const ALLOWED_FILE_TYPES = [
 
 const upload = multer({
   fileFilter: (req, file, cb) => {
-    const plan = user.plan.data
+    const plan = req.user.plan.data
     if (!ALLOWED_FILE_TYPES.includes(file.mimetype)) {
       return cb(new Error('Invalid file type'))
     }
-    if(file.size > 1024 * 1024 * plan.storageLimit) {
+    if (file.size > 1024 * 1024 * plan.storageLimit) {
       return cb(new Error('File size too large than in the plan'))
     }
     cb(null, true)
@@ -29,5 +29,6 @@ const upload = multer({
 const router = Router()
 
 router.post('/', authMiddleware, upload.single('file'), uploadFile)
+router.get('/', listUploads)
 
 export default router
