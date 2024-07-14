@@ -18,11 +18,7 @@ const PORT = process.env.PORT ?? 8000
 const FE_DIR = `${process.cwd()}/views/dist`
 
 app.use(
-  cors({
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    origin: '*',
-  })
+  cors()
 )
 
 if (process.env.DEV_ENV) {

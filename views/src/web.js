@@ -10,5 +10,6 @@ export default r2wc(App, React, ReactDOM, {
     filetype: 'string',
     data: 'string',
     title: 'string',
+    pageType: 'string'
   },
 })

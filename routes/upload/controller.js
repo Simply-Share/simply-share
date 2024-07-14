@@ -7,7 +7,7 @@ import { Shareable } from '../../common/db/app/index.js'
 import { randomSlugGenerator } from '../../common/utils/index.js'
 
 const PUBLIC_BUCKET_URL = 'https://cdn.hitenvats.one/eruva',
-  DEFAULT_DOMAIN = 'localhost:8000'
+  DEFAULT_DOMAIN = 'localhost'
 
 export async function uploadFile(req, res) {
   const schema = Joi.object({

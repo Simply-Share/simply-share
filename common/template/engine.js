@@ -24,4 +24,4 @@ const templateEngine =
 
 export default templateEngine
 
-const OPTION_KEYS = ['bucketLink', 'fileType', 'data', 'title']
+const OPTION_KEYS = ['bucketLink', 'fileType', 'data', 'title', 'pageType']
