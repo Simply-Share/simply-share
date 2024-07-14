@@ -1,8 +1,7 @@
 import { Router } from 'express'
 import multer from 'multer'
 
-import { uploadFile, listUploads } from './controller.js'
-import { authMiddleware } from '../../common/middleware/auth.js'
+import { uploadFile, listUploads, updateShareable } from './controller.js'
 
 const ALLOWED_FILE_TYPES = [
   'image/png',
@@ -28,7 +27,9 @@ const upload = multer({
 
 const router = Router()
 
-router.post('/', authMiddleware, upload.single('file'), uploadFile)
+router.post('/', upload.single('file'), uploadFile)
 router.get('/', listUploads)
+
+router.post('/:id', upload.single('file'), updateShareable)
 
 export default router

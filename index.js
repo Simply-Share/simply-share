@@ -25,6 +25,7 @@ app.use(Express.json())
 app.use(pathAdderMiddleware)
 
 app.use('/auth', authRouter)
+
 app.use('/upload', authMiddleware, uploadRouter)
 
 app.listen(PORT, () => {
