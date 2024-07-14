@@ -17,15 +17,13 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "express-react-views": "^0.11.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "prisma": "^5.16.1",
     "random-word-slugs": "^0.1.7",
-    "react": "^16.14.0",
-    "react-dom": "^16.14.0",
+    "serve-static": "^1.15.0",
     "unzipper": "^0.12.1"
   },
   "prisma": {

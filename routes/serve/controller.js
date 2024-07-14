@@ -4,14 +4,6 @@ export async function serveFrontend(req, res) {
   const [subdomain, domain] = req.hostname.includes('.')
     ? req.hostname.split('.')
     : [null, req.hostname]
-
-  if (!subdomain) {
-    return res.render('index', {
-      pageType: PAGE_TYPES[404],
-    })
-  }
-
-  res.render('index', {
-    pageType: PAGE_TYPES.VIEWER,
-  })
+  const data = { bucketLink: 'https://hitenvats.one', title: 'New Title' }
+  res.render('index', data)
 }
