@@ -22,19 +22,22 @@ export default class StorageBucket {
     }
   }
 
-  uploadFile(path, data) {
-    return new Upload({
+  uploadFile(path, data, contentType) {
+    const attributes = {
       client: this.client,
       params: {
         Bucket: this.bucket,
         Key: path,
         Body: data,
+        ContentType: contentType,
       },
       tags: [],
       queueSize: 4,
       partSize: 1024 * 1024 * 5,
       leavePartsOnError: false,
-    })
+    }
+    console.log('file attributes', attributes)
+    return new Upload(attributes)
   }
 
   getObject(path) {

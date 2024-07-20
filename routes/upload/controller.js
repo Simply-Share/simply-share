@@ -89,8 +89,10 @@ export async function uploadFile(req, res) {
     })
   }
 
+  console.log('file is', file)
+
   try {
-    const uploadInstance = storageBucket.uploadFile(path, file.buffer)
+    const uploadInstance = storageBucket.uploadFile(path, file.buffer, file.mimetype)
     let publicPath = `${PUBLIC_BUCKET_URL}/${path}`
     await uploadInstance.done()
     createdShareable = await Shareable.create({
