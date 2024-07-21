@@ -67,6 +67,7 @@ CREATE TABLE "domains" (
     "domain_id" SERIAL NOT NULL,
     "domain_name" TEXT NOT NULL,
     "sub_domain" TEXT NOT NULL,
+    "shareable_id" INTEGER NOT NULL,
     "data" JSONB NOT NULL DEFAULT '{}',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -110,6 +111,9 @@ CREATE UNIQUE INDEX "plans_slug_key" ON "plans"("slug");
 CREATE UNIQUE INDEX "shareables_slug_key" ON "shareables"("slug");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "domains_shareable_id_key" ON "domains"("shareable_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "domains_domain_name_sub_domain_key" ON "domains"("domain_name", "sub_domain");
 
 -- AddForeignKey
@@ -120,3 +124,8 @@ ALTER TABLE "user_plans" ADD CONSTRAINT "user_plans_plan_id_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "shareables" ADD CONSTRAINT "shareables_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "domains" ADD CONSTRAINT "domains_shareable_id_fkey" FOREIGN KEY ("shareable_id") REFERENCES "shareables"("shareable_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+

@@ -19,7 +19,24 @@ function findByEmail(email) {
     where: { email },
     include: {
       plan: true,
-    }
+    },
+  })
+}
+
+function findBySheareableId(shareableId) {
+  return db.user.findFirst({
+    where: {
+      shareables: {
+        some: {
+          id: {
+            equals: shareableId,
+          },
+        },
+      },
+    },
+    include: {
+      plan: true,
+    },
   })
 }
 
@@ -27,4 +44,5 @@ export default {
   create,
   update,
   findByEmail,
+  findBySheareableId,
 }

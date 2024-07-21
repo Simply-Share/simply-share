@@ -1,19 +1,34 @@
 import PropTypes from 'prop-types'
 
-import Preview from '../components/Preview'
-import './App.css'
+import NotFound from './Containers/404'
+import List from './Containers/List'
+import Viewer from './Containers/Viewer'
+import { PAGE_TYPES } from './constants'
+
+import './index.css'
 
 function App(props) {
-  console.log('App props:', props)
-  return (
-    <>
-      <Preview urls={props.bucketlink ? [props.bucketlink] : ['https://cdn.hitenvats.one/eruva/1_hitenvats16@gmail.com/sweet-boring-shampoo/Resume_hiten.pdf']} />
-    </>
-  )
+  let { bucketlink, data = null } = props
+  if (data) {
+    data = JSON.parse(decodeURIComponent(data))
+  }
+
+  switch (data.pageType) {
+    case PAGE_TYPES[404]:
+      return <NotFound />
+    case PAGE_TYPES.LIST:
+      return <List urls={bucketlink} data={data} />
+    case PAGE_TYPES.VIEWER:
+      return <Viewer bucketlink={bucketlink} />
+    default:
+      return <NotFound />
+  }
 }
 
 App.propTypes = {
   bucketlink: PropTypes.string,
+  filetype: PropTypes.string,
+  data: PropTypes.string,
 }
 
 export default App
