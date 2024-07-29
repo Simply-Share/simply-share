@@ -44,7 +44,7 @@ app.use(
 )
 
 // to serve JSON based APIs
-app.get('/health', (req, res) => {
+app.get('/_api/health', (req, res) => {
   res.json({
     ok: true,
     message: 'Server is healthy',
@@ -54,8 +54,8 @@ app.get('/health', (req, res) => {
 app.use(Express.json())
 app.use(pathAdderMiddleware)
 
-app.use('/auth', authRouter)
-app.use('/upload', authMiddleware, uploadRouter)
+app.use('/_api/auth', authRouter)
+app.use('/_api/upload', authMiddleware, uploadRouter)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
