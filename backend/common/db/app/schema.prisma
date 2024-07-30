@@ -54,7 +54,7 @@ model UserPlan {
   user   User @relation(fields: [userId], references: [id])
 
   plan   Plan @relation(fields: [planId], references: [id])
-  planId Int  @unique @map("plan_id")
+  planId Int  @map("plan_id")
 
   data   Json   @default("{}") @map("data")
   status Status @default(ACTIVE) @map("status")

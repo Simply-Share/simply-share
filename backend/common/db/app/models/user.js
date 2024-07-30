@@ -8,7 +8,7 @@ function create(data) {
 
 function update(filter, data, otherArgs = {}) {
   return db.user.update({
-    where: { id, ...filter },
+    where: { ...filter },
     data,
     ...otherArgs,
   })

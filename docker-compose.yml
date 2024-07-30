@@ -7,6 +7,15 @@ services:
       - 80:80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - 8001:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PG_ADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PG_ADMIN_PASSWORD}
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
   backend:
     build:
       context: ./backend
@@ -22,6 +31,8 @@ services:
       AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
       AWS_REGION: ${AWS_REGION}
       AWS_ENDPOINT: ${AWS_ENDPOINT}
+      DEFAULT_DOMAIN: ${DEFAULT_DOMAIN}
+      PUBLIC_BUCKET_URL: ${PUBLIC_BUCKET_URL}
     develop:
       watch:
         - path: ./backend
@@ -50,13 +61,14 @@ services:
     labels:
       traefik.http.routers.client.rule: Host(`localhost`)
       traefik.http.services.client.loadbalancer.server.port: 3000
-  # pgadmin:
-  #   image: dpage/pgadmin4
+  # postgres:
+  #   image: postgres:15-alpine
   #   ports:
-  #     - 5051:80
+  #     - 5433:5432
+  #   volumes:
+  #     - ./postgres:/var/lib/postgresql/data
   #   environment:
-  #     - PGADMIN_DEFAULT_EMAIL=admin@example.com
-  #     - PGADMIN_DEFAULT_PASSWORD=admin123
-  #   labels: 
-  #       traefik.http.routers.client.rule: Host(`admin.localhost`)
-  #       traefik.http.services.client.loadbalancer.server.port: 5051
+  #     - POSTGRES_PASSWORD=simplyshare
+  #     - POSTGRES_USER=simplyshare
+  #     - POSTGRES_DB=simplyshare
+  #     - POSTGRES_PORT=5432

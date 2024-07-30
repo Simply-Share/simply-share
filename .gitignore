@@ -3,3 +3,4 @@ node_modules
 postgres
 .DS_Store
 uploads
+pgadmin

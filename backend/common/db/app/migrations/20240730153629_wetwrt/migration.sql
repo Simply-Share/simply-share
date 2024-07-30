@@ -90,9 +90,6 @@ CREATE INDEX "user_oauth_provider_index" ON "users"("oauth_provider");
 CREATE UNIQUE INDEX "user_plans_user_id_key" ON "user_plans"("user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "user_plans_plan_id_key" ON "user_plans"("plan_id");
-
--- CreateIndex
 CREATE INDEX "user_plan_user_id_index" ON "user_plans"("user_id");
 
 -- CreateIndex
@@ -127,5 +124,3 @@ ALTER TABLE "shareables" ADD CONSTRAINT "shareables_user_id_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "domains" ADD CONSTRAINT "domains_shareable_id_fkey" FOREIGN KEY ("shareable_id") REFERENCES "shareables"("shareable_id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
-

@@ -124,19 +124,12 @@ class GoogleOauthProvider {
       oauthProvider: OauthProvider.GOOGLE,
       data: profile,
     })
-    let userPlan = await UserPlan.create({
+    await UserPlan.create({
       userId: user.id,
       planId: freePlan.id,
       data: freePlan.data,
     })
-    await User.update(
-      {
-        email: user.email,
-      },
-      {
-        plan: userPlan,
-      }
-    )
+    user = await User.findByEmail(user.email)
     return user
   }
 }

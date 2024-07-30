@@ -6,8 +6,8 @@ import { storageBucket } from '../../common/storage/index.js'
 import { Shareable } from '../../common/db/app/index.js'
 import { randomSlugGenerator } from '../../common/utils/index.js'
 
-const PUBLIC_BUCKET_URL = 'https://cdn.hitenvats.one/eruva',
-  DEFAULT_DOMAIN = 'localhost'
+const PUBLIC_BUCKET_URL = process.env.PUBLIC_BUCKET_URL,
+  DEFAULT_DOMAIN = process.env.DEFAULT_DOMAIN
 
 export async function uploadFile(req, res) {
   const schema = Joi.object({
