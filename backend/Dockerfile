@@ -17,5 +17,6 @@ COPY --from=backend-dev /app/package.json /app/package-lock.json ./
 RUN --mount=type=cache,id=npm,target=/usr/local/share/.cache/npm \
     npm install
 COPY . .
+RUN npx prisma generate
 EXPOSE 8000
 CMD npm run start
