@@ -1,60 +1,13 @@
 version: '3.7'
 services:
-  web:
-    image: nginx
-    volumes: 
-      - /home/ubuntu/docker/nginx:/etc/nginx/templates
-    ports:
-      - "8080:80"
-    environment:
-      - NGNIX_HOST=simplyshare.xyz
-      - NGINX_PORT=80
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.nginx.entrypoints=http"
-      - "traefik.http.routers.nginx.rule-Host('simplyshare.xyz')"
-      - "traefik.http.middlewares.nginx-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.routers.nginx.middlewares-jellyfin-https-redirect" 
-      - "traefik.http.routers.nginx-secure.entrypoints=https"
-      - "traefik.http.routers.nginx-secure.rule-Host(simplyshare.xyz)"
-      - "traefik.http.routers.nginx-secure.tls-true" 
-      - "traefik.http.routers.nginx-secure.service-nginx" 
-      - "traefik.http.services.nginx.loadbalancer.server.port=80"
-      - "traefik.docker.network-proxy"
-    networks:
-      - proxy
   proxy:
     image: traefik:v2.11
     command: --providers.docker --api.insecure=true --entrypoints.web.address=:80
-    restart: unless-stopped
     ports:
-      - 80:80
-      - 443:443
+      - 8080:8080
+      - 4567:80
     volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.yml:/traefik.yml:ro
-      - ./traefik/acme.json:/acme.json
-      - ./traefik/config.yml:/config.yml:ro
-      - ./traefik/logs:/var/log/traefik
-    environment:
-      CF_API_EMAIL: ${CF_API_EMAIL}
-      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik-dashboard.${TRAEFIK_DEFAULT_DOMAIN}`)"
-      - "treafik.http.middlewares.traefik-auth.basicauth.users=admin:${TRAEFIK_ADMIN_PASSWORD}"
-      - "treafik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
-      - "treafik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
-      - "traefik.http.routers.traefik-secure.entrypoints=https"
-      - "traefik.http.routers.traefik-secure.rule=Host(`traefik-dashboard.${TRAEFIK_DEFAULT_DOMAIN}`)"
-      - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
-      - "traefik.http.routers.traefik-secure.tls=true"
-      - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
-      - "traefik.http.routers.traefik-secure.tls.domains[0].main=${TRAEFIK_DEFAULT_DOMAIN}"
-      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.${TRAEFIK_DEFAULT_DOMAIN}"
-      - "traefik.http.routers.traefik-secure.service=api@internal"
+      - /var/run/docker.sock:/var/run/docker.sock
   backend:
     build:
       context: ./backend
