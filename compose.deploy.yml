@@ -1,0 +1,70 @@
+version: '3.7'
+services:
+  proxy:
+    image: traefik:v2.11
+    command: --providers.docker --api.insecure=true --entrypoints.web.address=:80
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/traefik.yml:ro
+      - ./traefik/acme.json:/acme.json
+      - ./traefik/config.yml:/config.yml:ro
+      - ./traefik/logs:/var/log/traefik
+    environment:
+      CF_API_EMAIL: ${CF_API_EMAIL}
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik-dashboard.${TRAEFIK_DEFAULT_DOMAIN}`)"
+      - "treafik.http.middlewares.traefik-auth.basicauth.users=admin:${TRAEFIK_PASSWORD}"
+      - "treafik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      - "treafik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+      - "traefik.http.routers.traefik-secure.entrypoints=https"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik-dashboard.${TRAEFIK_DEFAULT_DOMAIN}`)"
+      - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].main=${TRAEFIK_DEFAULT_DOMAIN}"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.${TRAEFIK_DEFAULT_DOMAIN}"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+  backend:
+    build:
+      context: ./backend
+      target: final
+    environment:
+      DATABASE_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_ADDRESS}:${DATABASE_PORT}/${DATABASE_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_REDIRECT_URL: ${GOOGLE_REDIRECT_URL}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
+      AWS_REGION: ${AWS_REGION}
+      AWS_ENDPOINT: ${AWS_ENDPOINT}
+      DEFAULT_DOMAIN: ${DEFAULT_DOMAIN}
+      PUBLIC_BUCKET_URL: ${PUBLIC_BUCKET_URL}
+    labels:
+      traefik.http.routers.backend.rule: HostRegexp(`{subdomain:[a-zA-Z0-9.-]+}.localhost`) || PathPrefix(`/_api`)
+      traefik.http.services.backend.loadbalancer.server.port: 8000
+  client:
+    build:
+      context: ./dashboard
+      target: final
+    environment:
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXT_SERVER_URL: ${NEXT_SERVER_URL}
+      NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+    labels:
+      traefik.http.routers.client.rule: Host(`localhost`)
+      traefik.http.services.client.loadbalancer.server.port: 3000
+
+networks:
+  proxy:
+    name: proxy 
+    external: true
