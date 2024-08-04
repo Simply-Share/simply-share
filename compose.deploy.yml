@@ -20,7 +20,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`traefik-dashboard.${TRAEFIK_DEFAULT_DOMAIN}`)"
-      - "treafik.http.middlewares.traefik-auth.basicauth.users=admin:${TRAEFIK_PASSWORD}"
+      - "treafik.http.middlewares.traefik-auth.basicauth.users=admin:${TRAEFIK_ADMIN_PASSWORD}"
       - "treafik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
       - "treafik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
